@@ -20,7 +20,7 @@ Precisa de **Node 20+**, uma instância n8n com chave de API e, só para os prin
 
 ```bash
 claude plugin marketplace add flowgrammers/flow-n8n
-claude plugin install flow-n8n
+claude plugin install flow-n8n@flow-n8n
 ```
 
 Os dois comandos passam a existir em **qualquer**
@@ -73,7 +73,7 @@ com o que falta.
 
 ```bash
 claude plugin uninstall flow-n8n
-claude plugin marketplace remove flow-n8n-harness
+claude plugin marketplace remove flow-n8n
 ```
 
 O que ficou no seu projeto (`.env`, `.secrets/`, `docs/evidencias/`) não é tocado: a evidência
