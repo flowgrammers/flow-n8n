@@ -1,0 +1,12 @@
+# Segredos e sessão — nunca versionados
+.env
+.secrets/
+*.pem
+
+# Dependências e artefatos do Playwright
+node_modules/
+test-results/
+playwright-report/
+
+# Sistema
+.DS_Store

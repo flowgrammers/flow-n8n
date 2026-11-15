@@ -1,0 +1,6 @@
+{
+  "instancia": "127.0.0.1:50587",
+  "base": "http://127.0.0.1:50587",
+  "alcancavel": true,
+  "workflowsVisiveis": true
+}

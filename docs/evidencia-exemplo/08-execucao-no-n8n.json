@@ -1,0 +1,86 @@
+{
+  "id": "exec-falsa-1",
+  "workflowId": "wf-falso-1",
+  "status": "success",
+  "finished": true,
+  "mode": "webhook",
+  "startedAt": "2026-11-15T03:01:53.023Z",
+  "dadosDosNos": {
+    "Webhook": [
+      {
+        "json": {
+          "body": {
+            "teste": true,
+            "origem": "flow-n8n-harness",
+            "quando": "2026-11-15T03:01:52.982Z"
+          }
+        }
+      }
+    ],
+    "Montar o eco": [
+      {
+        "json": {
+          "recebido": {
+            "teste": true,
+            "origem": "flow-n8n-harness",
+            "quando": "2026-11-15T03:01:52.982Z"
+          },
+          "ecoadoEm": "2026-11-15T03:01:53.023Z",
+          "origem": "flow-n8n-harness"
+        }
+      }
+    ],
+    "Responder": [
+      {
+        "json": {
+          "recebido": {
+            "teste": true,
+            "origem": "flow-n8n-harness",
+            "quando": "2026-11-15T03:01:52.982Z"
+          },
+          "ecoadoEm": "2026-11-15T03:01:53.023Z",
+          "origem": "flow-n8n-harness"
+        }
+      }
+    ]
+  },
+  "data": {
+    "Webhook": [
+      {
+        "json": {
+          "body": {
+            "teste": true,
+            "origem": "flow-n8n-harness",
+            "quando": "2026-11-15T03:01:52.982Z"
+          }
+        }
+      }
+    ],
+    "Montar o eco": [
+      {
+        "json": {
+          "recebido": {
+            "teste": true,
+            "origem": "flow-n8n-harness",
+            "quando": "2026-11-15T03:01:52.982Z"
+          },
+          "ecoadoEm": "2026-11-15T03:01:53.023Z",
+          "origem": "flow-n8n-harness"
+        }
+      }
+    ],
+    "Responder": [
+      {
+        "json": {
+          "recebido": {
+            "teste": true,
+            "origem": "flow-n8n-harness",
+            "quando": "2026-11-15T03:01:52.982Z"
+          },
+          "ecoadoEm": "2026-11-15T03:01:53.023Z",
+          "origem": "flow-n8n-harness"
+        }
+      }
+    ]
+  }
+}

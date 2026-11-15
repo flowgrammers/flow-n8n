@@ -1,0 +1,8 @@
+{
+  "name": "flow-n8n",
+  "description": "Esteira de workflow n8n: liga o Claude Code ao harness por OAuth e roda o ciclo completo — criar, testar, evidenciar com print e payload, e publicar só com OK da pessoa.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Flowgrammers"
+  }
+}

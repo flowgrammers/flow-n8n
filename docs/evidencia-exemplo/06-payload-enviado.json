@@ -1,0 +1,9 @@
+{
+  "webhook": "/flow-n8n-harness-eco",
+  "metodo": "POST",
+  "corpo": {
+    "teste": true,
+    "origem": "flow-n8n-harness",
+    "quando": "2026-11-15T03:01:52.982Z"
+  }
+}

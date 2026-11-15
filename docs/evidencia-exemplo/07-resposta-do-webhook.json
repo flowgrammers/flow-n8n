@@ -1,0 +1,17 @@
+{
+  "url": "http://127.0.0.1:50587/webhook/flow-n8n-harness-eco",
+  "metodo": "POST",
+  "status": 200,
+  "ok": true,
+  "duracaoMs": 1,
+  "corpo": {
+    "recebido": {
+      "teste": true,
+      "origem": "flow-n8n-harness",
+      "quando": "2026-11-15T03:01:52.982Z"
+    },
+    "ecoadoEm": "2026-11-15T03:01:53.023Z",
+    "origem": "flow-n8n-harness"
+  },
+  "tentativa": 1
+}

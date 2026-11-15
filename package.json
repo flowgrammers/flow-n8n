@@ -1,0 +1,24 @@
+{
+  "name": "flow-n8n-harness",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kit de esteira para workflows n8n: criar, testar, evidenciar e publicar com OK humano",
+  "scripts": {
+    "preparar": "node plugins/flow-n8n/scripts/lib/esteira.js preparar",
+    "login": "node plugins/flow-n8n/scripts/lib/esteira.js login",
+    "ciclo": "node plugins/flow-n8n/scripts/lib/esteira.js ciclo",
+    "ligar": "node plugins/flow-n8n/scripts/lib/ligar-n8n.js plano",
+    "teste": "node testes/executar.js",
+    "teste:prints": "node testes/prints-fumaca.js",
+    "teste:ciclo": "node testes/ciclo-contra-falsa.js",
+    "teste:tudo": "npm run teste && npm run teste:ciclo && npm run teste:plugin && npm run teste:prints",
+    "init": "node plugins/flow-n8n/scripts/lib/esteira.js init",
+    "teste:plugin": "node testes/como-plugin.js"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

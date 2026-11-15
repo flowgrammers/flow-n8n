@@ -1,0 +1,23 @@
+{
+  "name": "flow-n8n-harness",
+  "owner": {
+    "name": "Flowgrammers"
+  },
+  "metadata": {
+    "description": "Kit de n8n para Claude Code: ligação por OAuth e esteira de workflow com evidência",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "flow-n8n",
+      "description": "Esteira de workflow n8n: criar, testar, evidenciar e publicar com OK da pessoa.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Flowgrammers"
+      },
+      "source": "./plugins/flow-n8n",
+      "category": "workflow",
+      "strict": false
+    }
+  ]
+}
