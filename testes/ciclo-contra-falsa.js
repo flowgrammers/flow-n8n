@@ -50,6 +50,13 @@ function rodar(args, ambiente) {
 
   console.log('\nCiclo completo contra a instância falsa');
 
+  // Uma rodada antiga que ficou ATIVA com o path do exemplo — foi o que travou o training em
+  // 16/11 com 409. O ciclo tem de passar mesmo assim.
+  falsa.workflows.set('wf-antigo', {
+    id: 'wf-antigo', active: true, name: 'rodada antiga',
+    nodes: [{ name: 'Receber Payload', type: 'n8n-nodes-base.webhook', parameters: { path: 'flow-n8n-harness-eco' } }],
+  });
+
   const r = await rodar(
     ['ciclo', '--spec', path.join(RAIZ, 'plugins', 'flow-n8n', 'exemplos', 'eco.json'), '--raiz', raiz, '--sem-prints'],
     ambiente,
@@ -104,11 +111,11 @@ function rodar(args, ambiente) {
   await teste('a execução guardada traz o dado de cada nó', () => {
     const dados = achar(/execucao-no-n8n\.json$/);
     assert.strictEqual(dados.status, 'success');
-    assert.ok(dados.data?.['Montar o eco'], `faltou o nó: ${Object.keys(dados.data || {})}`);
+    assert.ok(dados.data?.['Responder com Eco'], `faltou o nó: ${Object.keys(dados.data || {})}`);
   });
 
   await teste('o workflow fica INATIVO no fim do ciclo', () => {
-    const wfs = [...falsa.workflows.values()];
+    const wfs = [...falsa.workflows.values()].filter((w) => w.id !== 'wf-antigo');
     assert.strictEqual(wfs.length, 1, `workflows criados: ${wfs.length}`);
     assert.strictEqual(wfs[0].active, false, 'o ciclo deixou o workflow ativo — publicação sem OK');
   });
@@ -121,10 +128,23 @@ function rodar(args, ambiente) {
 
   console.log('\nFidelidade da instância falsa');
 
-  const id = [...falsa.workflows.keys()][0];
+  const id = [...falsa.workflows.keys()].find((k) => k !== 'wf-antigo');
+  const pathDaRodada = falsa.workflows.get(id).nodes.find((n) => n.type === 'n8n-nodes-base.webhook').parameters.path;
+
+  await teste('o path do webhook ganhou sufixo da rodada e a descrição chegou', () => {
+    assert.ok(/^flow-n8n-harness-eco-[0-9a-f]{6}$/.test(pathDaRodada), pathDaRodada);
+    assert.ok(falsa.workflows.get(id).description, 'a description não foi enviada');
+    assert.strictEqual(falsa.workflows.get(id).settings.availableInMCP, true);
+  });
+
+  await teste('a conferência de padrões passou no exemplo', () => {
+    const regras = achar(/padroes\.json$/);
+    const fora = regras.filter((r) => !r.ok);
+    assert.strictEqual(fora.length, 0, JSON.stringify(fora));
+  });
 
   await teste('webhook de produção devolve 404 com o workflow inativo', async () => {
-    const resp = await fetch(`${falsa.url}/webhook/flow-n8n-harness-eco`, {
+    const resp = await fetch(`${falsa.url}/webhook/${pathDaRodada}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: '{}',

@@ -87,7 +87,8 @@ async function sondar() {
  * passa só o que a API aceita na criação.
  */
 async function criarWorkflow(definicao) {
-  const aceitos = ['name', 'nodes', 'connections', 'settings', 'staticData'];
+  // `description` entrou depois: a API aceita, e sem ela o workflow chega mudo à listagem.
+  const aceitos = ['name', 'description', 'nodes', 'connections', 'settings', 'staticData'];
   const corpo = {};
   for (const k of aceitos) if (definicao[k] !== undefined) corpo[k] = definicao[k];
   if (!corpo.settings) corpo.settings = {};

@@ -29,7 +29,7 @@ testes/executar.js                   # suíte sem rede
 
 ```bash
 npm install && npx playwright install chromium
-npm run teste          # 15 asserções, sem rede
+npm run teste          # suíte sem rede
 npm run preparar       # confere credencial e alcance
 npm run login          # a PESSOA loga; sessão em .secrets/
 npm run ciclo -- --spec exemplos/eco.json
@@ -52,6 +52,11 @@ npm run ciclo -- --spec exemplos/eco.json
   o Bearer vencido, o servidor devolve 401 e a sessão perde todas as ferramentas do n8n, com
   cara de falta de escopo. É o que o `ligar-n8n.js` diagnostica — e o conserto é **tirar** o
   header, não renová-lo.
+- **Path de webhook fixo trava a esteira.** Uma rodada antiga que ficou ativa segura o path, e
+  o `activate` seguinte devolve `409 conflict with one of the webhooks`. O ciclo acrescenta um
+  sufixo por rodada e um `webhookId` novo; a spec em disco não muda.
+- **Workflow criado pela API nasce com `availableInMCP: false`**, invisível ao `test_workflow`.
+  A esteira liga o flag, a menos que a spec diga o contrário.
 - **O POST de criação recusa campos de leitura** (`id`, `active`, `tags`, `createdAt`). O
   cliente filtra para os cinco que a API aceita.
 

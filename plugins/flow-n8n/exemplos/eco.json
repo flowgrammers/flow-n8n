@@ -1,6 +1,20 @@
 {
-  "name": "[esteira] eco de webhook",
+  "name": "[esteira] Eco de webhook",
+  "description": "Devolve ao chamador o corpo recebido, com data e origem. Existe para a esteira do flow-n8n-harness provar o ciclo ponta a ponta: criar, ativar, disparar, ler a execução e desativar.",
   "nodes": [
+    {
+      "parameters": {
+        "content": "### 📋 DOC\n**O que faz:** devolve o corpo do POST recebido, com `ecoadoEm` e `origem`.\n**Gatilho:** webhook `POST /flow-n8n-harness-eco` (a esteira acrescenta um sufixo por rodada).\n**Integrações:** nenhuma.\n**Categoria:** teste da esteira · **Status:** exemplo, não publicar.\n**Alertas:** sem nó falível no caminho; por isso não há caminho de erro.",
+        "height": 260,
+        "width": 420,
+        "color": 7
+      },
+      "id": "a1b2c3d4-0000-4000-8000-000000000000",
+      "name": "Documentação",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-240, -320]
+    },
     {
       "parameters": {
         "httpMethod": "POST",
@@ -9,7 +23,7 @@
         "options": {}
       },
       "id": "a1b2c3d4-0001-4000-8000-000000000001",
-      "name": "Webhook",
+      "name": "Receber Payload",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [-180, 0],
@@ -17,52 +31,19 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "c1",
-              "name": "recebido",
-              "value": "={{ $json.body }}",
-              "type": "object"
-            },
-            {
-              "id": "c2",
-              "name": "ecoadoEm",
-              "value": "={{ $now.toISO() }}",
-              "type": "string"
-            },
-            {
-              "id": "c3",
-              "name": "origem",
-              "value": "flow-n8n-harness",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "a1b2c3d4-0002-4000-8000-000000000002",
-      "name": "Montar o eco",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [40, 0]
-    },
-    {
-      "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify($json) }}",
+        "responseBody": "={{ JSON.stringify({ recebido: $('Receber Payload').item.json.body, ecoadoEm: $now.toISO(), origem: 'flow-n8n-harness' }) }}",
         "options": {}
       },
       "id": "a1b2c3d4-0003-4000-8000-000000000003",
-      "name": "Responder",
+      "name": "Responder com Eco",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [260, 0]
+      "position": [60, 0]
     }
   ],
   "connections": {
-    "Webhook": { "main": [[{ "node": "Montar o eco", "type": "main", "index": 0 }]] },
-    "Montar o eco": { "main": [[{ "node": "Responder", "type": "main", "index": 0 }]] }
+    "Receber Payload": { "main": [[{ "node": "Responder com Eco", "type": "main", "index": 0 }]] }
   },
-  "settings": { "executionOrder": "v1" }
+  "settings": { "executionOrder": "v1", "availableInMCP": true }
 }

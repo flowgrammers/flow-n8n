@@ -34,8 +34,36 @@ const path = require('path');
 const n8n = require('./n8n');
 const { abrirRodada } = require('./evidencia');
 const prints = require('./prints');
+const padroes = require('./padroes');
+const crypto = require('crypto');
 
 const ESPERA_EXECUCAO_MS = 20000;
+
+/**
+ * Prepara a cópia que vai para a instância. A definição em disco não muda.
+ *
+ * 1. **Path de webhook único por rodada.** O n8n recusa ativar dois workflows com o mesmo
+ *    path (`409 conflict with one of the webhooks`). Com path fixo, uma rodada anterior que
+ *    ficou ativa trava todas as seguintes — foi o que aconteceu no training em 16/11. O
+ *    sufixo e o `webhookId` novo isolam cada rodada.
+ * 2. **`availableInMCP` ligado por padrão.** Workflow criado pela API nasce invisível ao MCP,
+ *    e é pelo MCP (`test_workflow`) que se dispara o que não tem webhook. A spec pode desligar.
+ */
+function prepararParaTeste(definicao, sufixo) {
+  const copia = JSON.parse(JSON.stringify(definicao));
+  const trocas = [];
+  for (const no of copia.nodes || []) {
+    if (no.type !== 'n8n-nodes-base.webhook') continue;
+    const antes = no.parameters?.path;
+    if (typeof antes !== 'string' || !antes.trim()) continue;
+    no.parameters.path = `${antes.trim().replace(/\/+$/, '')}-${sufixo}`;
+    no.webhookId = crypto.randomUUID();
+    trocas.push({ no: no.name, de: antes, para: no.parameters.path });
+  }
+  copia.settings = { ...(copia.settings || {}) };
+  if (copia.settings.availableInMCP === undefined) copia.settings.availableInMCP = true;
+  return { definicao: copia, trocas };
+}
 
 /**
  * Carrega o `.env` para o ambiente. O Node não faz isso sozinho, e o README manda copiar
@@ -205,12 +233,27 @@ async function comandoCiclo(op) {
       arquivos: [rodada.salvarJson('sonda-da-instancia', { instancia: hostDe(base), ...sonda })],
       detalhe: `Credencial válida em \`${hostDe(base)}\`.` });
 
-    // 2. criar
-    const enviado = rodada.salvarJson('workflow-enviado', definicao);
-    criado = await n8n.criarWorkflow(definicao);
+    // 2. padrões — avisa, não bloqueia
+    const regras = padroes.conferir(definicao);
+    const foraDoPadrao = regras.filter((r) => !r.ok);
+    rodada.passo({ etapa: 'Conferir padrões', situacao: foraDoPadrao.length ? 'aviso' : 'ok',
+      arquivos: [rodada.salvarJson('padroes', regras)],
+      detalhe: foraDoPadrao.length
+        ? `${foraDoPadrao.length} de ${regras.length} regra(s) fora do padrão: ` +
+          foraDoPadrao.map((r) => `${r.regra} (${r.detalhe})`).join('; ') + '.'
+        : `As ${regras.length} regras conferidas passaram.` });
+
+    // 3. criar
+    const sufixo = crypto.randomBytes(3).toString('hex');
+    const { definicao: paraEnviar, trocas } = prepararParaTeste(definicao, sufixo);
+    const enviado = rodada.salvarJson('workflow-enviado', paraEnviar);
+    criado = await n8n.criarWorkflow(paraEnviar);
     const resposta = rodada.salvarJson('workflow-criado', criado);
     rodada.passo({ etapa: 'Criar o workflow', situacao: 'ok', arquivos: [enviado, resposta],
-      detalhe: `Criado com id \`${criado.id}\`, inativo — como o n8n cria tudo.` });
+      detalhe: `Criado com id \`${criado.id}\`, inativo — como o n8n cria tudo.` +
+        (trocas.length
+          ? ` Path de webhook isolado nesta rodada: ${trocas.map((t) => `\`/${t.de}\` → \`/${t.para}\``).join(', ')}.`
+          : '') });
 
     // 3. JSON canônico, já com o que o n8n normalizou
     const lido = await n8n.obterWorkflow(criado.id);

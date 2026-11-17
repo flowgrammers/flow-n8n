@@ -54,7 +54,17 @@ function subir({ porta = 0 } = {}) {
       if (api && mWf) {
         const wf = workflows.get(mWf[1]);
         if (!wf) return responder(404, { message: 'not found' });
-        if (mWf[3] === 'activate' && req.method === 'POST') { wf.active = true; return responder(200, wf); }
+        if (mWf[3] === 'activate' && req.method === 'POST') {
+          // Como o n8n: dois workflows ativos não dividem o mesmo path de webhook.
+          const paths = (w) => (w.nodes || []).filter((n) => n.type === 'n8n-nodes-base.webhook')
+            .map((n) => n.parameters?.path);
+          const meus = paths(wf);
+          const choque = [...workflows.values()].some((o) => o.id !== wf.id && o.active &&
+            paths(o).some((p) => meus.includes(p)));
+          if (choque) return responder(409, { message: 'There is a conflict with one of the webhooks.' });
+          wf.active = true;
+          return responder(200, wf);
+        }
         if (mWf[3] === 'deactivate' && req.method === 'POST') { wf.active = false; return responder(200, wf); }
         if (req.method === 'GET') return responder(200, wf);
         if (req.method === 'DELETE') { workflows.delete(wf.id); return responder(200, wf); }
@@ -92,11 +102,10 @@ function subir({ porta = 0 } = {}) {
           finished: true,
           mode: 'webhook',
           startedAt: new Date().toISOString(),
-          dadosDosNos: {
-            Webhook: [{ json: { body: entrada } }],
-            'Montar o eco': [{ json: eco }],
-            Responder: [{ json: eco }],
-          },
+          // Um registro por nó real do workflow, com o nome que ELE deu — sticky não executa.
+          dadosDosNos: Object.fromEntries((wf.nodes || [])
+            .filter((n) => n.type !== 'n8n-nodes-base.stickyNote')
+            .map((n) => [n.name, [{ json: n.type === 'n8n-nodes-base.webhook' ? { body: entrada } : eco }]])),
         });
         return responder(200, eco);
       }

@@ -163,10 +163,41 @@ teste('workflow sem webhook devolve nulo, em vez de inventar caminho', () => {
 });
 
 teste('a criação só envia os campos que a API aceita', () => {
-  const aceitos = ['name', 'nodes', 'connections', 'settings', 'staticData'];
+  const aceitos = ['name', 'description', 'nodes', 'connections', 'settings', 'staticData'];
   const fonte = fs.readFileSync(path.join(RAIZ, 'plugins/flow-n8n/scripts/lib/n8n.js'), 'utf8');
   for (const campo of aceitos) assert.ok(fonte.includes(`'${campo}'`), `faltou ${campo} na lista`);
   assert.ok(!/const aceitos = \[[^\]]*'id'/.test(fonte), 'id não pode ir no POST de criação');
+});
+
+console.log('\nConferência de padrões');
+
+const { conferir } = require(path.join(RAIZ, 'plugins/flow-n8n/scripts/lib/padroes.js'));
+
+teste('o exemplo que acompanha o kit passa em todas as regras', () => {
+  const wf = JSON.parse(fs.readFileSync(path.join(RAIZ, 'plugins', 'flow-n8n', 'exemplos', 'eco.json'), 'utf8'));
+  const fora = conferir(wf).filter((r) => !r.ok);
+  assert.strictEqual(fora.length, 0, JSON.stringify(fora));
+});
+
+teste('workflow cru do editor cai em descrição, DOC, nome e nós genéricos', () => {
+  const cru = { name: 'My workflow 3', nodes: [
+    { name: 'Webhook', type: 'n8n-nodes-base.webhook', parameters: { responseMode: 'responseNode' } },
+    { name: 'HTTP Request1', type: 'n8n-nodes-base.httpRequest', parameters: {} },
+    { name: 'Respond to Webhook', type: 'n8n-nodes-base.respondToWebhook', parameters: {} },
+  ] };
+  const fora = conferir(cru).filter((r) => !r.ok).map((r) => r.regra);
+  for (const r of ['Nome do workflow descritivo', 'Descrição preenchida', 'Sticky `📋 DOC` no canvas',
+    'Nós com nome de ação, não de tipo', 'Webhook que responde tem caminho de erro']) {
+    assert.ok(fora.includes(r), `não acusou: ${r} — acusou: ${fora.join(' | ')}`);
+  }
+});
+
+teste('saída de erro ligada satisfaz a regra do webhook que responde', () => {
+  const wf = { nodes: [
+    { name: 'Receber Pedido', type: 'n8n-nodes-base.webhook', parameters: { responseMode: 'responseNode' } },
+    { name: 'Buscar Cliente', type: 'n8n-nodes-base.httpRequest', onError: 'continueErrorOutput' },
+  ] };
+  assert.ok(conferir(wf).find((r) => r.regra.startsWith('Webhook')).ok);
 });
 
 console.log('\nCódigos de saída e o portão do OK');
