@@ -11,8 +11,9 @@
  *     (é o campo que aparece na listagem e na busca do MCP);
  *   · sticky `📋 DOC` no canvas — convenção do n8n-workflows-production;
  *   · nome de workflow que não seja o padrão do editor ("My workflow 3");
- *   · nome de nó que descreva a ação, não o tipo ("Set1", "HTTP Request") — preferência
- *     gravada na instância e boa prática oficial;
+ *   · nome de nó em camelCase e descrevendo a ação, não o tipo (`buscarCliente`, nunca
+ *     "Set1" nem "HTTP Request") — padrão decidido pelo Ric em 16/11/2026, e boa prática
+ *     oficial quanto a nomear pela ação;
  *   · webhook que responde por nó, com nó falível no caminho, precisa de tratamento de erro —
  *     senão quem chamou recebe 500 cru (n8n-error-handling-official).
  */
@@ -29,6 +30,12 @@ const NOMES_PADRAO = [
 ];
 const RE_NOME_PADRAO = new RegExp(
   `^(${NOMES_PADRAO.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\s*\\d*$`, 'i');
+
+/**
+ * camelCase: começa por letra minúscula, sem espaço nem pontuação. Letra acentuada é aceita
+ * (`atualizarUsuário`), porque o nome do nó é texto que a pessoa lê no canvas.
+ */
+const RE_CAMEL = /^\p{Ll}[\p{L}\p{N}]*$/u;
 
 /** Tipos que costumam falhar em produção: rede, código, ou qualquer nó com credencial. */
 function ehFalivel(no) {
@@ -81,6 +88,15 @@ function conferir(definicao) {
       : `${reais.length} nó(s) conferidos`,
   });
 
+  const foraDeCamel = reais.filter((n) => !RE_CAMEL.test(String(n.name || '')));
+  regras.push({
+    regra: 'Nós em camelCase',
+    ok: foraDeCamel.length === 0,
+    detalhe: foraDeCamel.length
+      ? `fora do padrão: ${foraDeCamel.map((n) => `\`${n.name}\``).join(', ')} (ex.: \`receberPayload\`)`
+      : `${reais.length} nó(s) conferidos`,
+  });
+
   const responde = reais.some((n) => n.type === 'n8n-nodes-base.webhook' &&
     n.parameters?.responseMode === 'responseNode');
   const falivel = reais.some(ehFalivel);
@@ -98,4 +114,4 @@ function conferir(definicao) {
   return regras;
 }
 
-module.exports = { conferir, RE_NOME_PADRAO };
+module.exports = { conferir, RE_NOME_PADRAO, RE_CAMEL };

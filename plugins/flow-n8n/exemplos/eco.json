@@ -10,7 +10,7 @@
         "color": 7
       },
       "id": "a1b2c3d4-0000-4000-8000-000000000000",
-      "name": "Documentação",
+      "name": "documentacao",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [-240, -320]
@@ -23,7 +23,7 @@
         "options": {}
       },
       "id": "a1b2c3d4-0001-4000-8000-000000000001",
-      "name": "Receber Payload",
+      "name": "receberPayload",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [-180, 0],
@@ -32,18 +32,18 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ recebido: $('Receber Payload').item.json.body, ecoadoEm: $now.toISO(), origem: 'flow-n8n-harness' }) }}",
+        "responseBody": "={{ JSON.stringify({ recebido: $('receberPayload').item.json.body, ecoadoEm: $now.toISO(), origem: 'flow-n8n-harness' }) }}",
         "options": {}
       },
       "id": "a1b2c3d4-0003-4000-8000-000000000003",
-      "name": "Responder com Eco",
+      "name": "responderComEco",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [60, 0]
     }
   ],
   "connections": {
-    "Receber Payload": { "main": [[{ "node": "Responder com Eco", "type": "main", "index": 0 }]] }
+    "receberPayload": { "main": [[{ "node": "responderComEco", "type": "main", "index": 0 }]] }
   },
   "settings": { "executionOrder": "v1", "availableInMCP": true }
 }

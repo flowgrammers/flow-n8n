@@ -211,6 +211,16 @@ async function comandoLogin(op) {
   return 0;
 }
 
+/** Desativa o workflow que o ciclo ligou para o teste e registra o passo. Devolve se deu certo. */
+async function desativarDepoisDoTeste(rodada, workflowId) {
+  const r = await n8n.desativar(workflowId).then(() => 'ok').catch((e) => e.message);
+  rodada.passo({ etapa: 'Desativar depois do teste', situacao: r === 'ok' ? 'ok' : 'falhou',
+    detalhe: r === 'ok'
+      ? 'Workflow de volta a inativo, antes dos prints. Publicar é passo separado, e exige o seu OK.'
+      : `Não consegui desativar: ${r}. Confira na instância.` });
+  return r === 'ok';
+}
+
 async function comandoCiclo(op) {
   if (!op.spec) { console.error('[esteira] falta --spec <arquivo.json> com a definição do workflow.'); return 2; }
   const raiz = path.resolve(op.raiz || process.cwd());
@@ -312,7 +322,14 @@ async function comandoCiclo(op) {
       }
     }
 
-    // 6. prints
+    // 6. desativar ANTES dos prints: senão o canvas sai como "Published", um estado que o
+    //    workflow não tem ao fim do ciclo, e a evidência mente (visto no training em 16/11).
+    if (ativadoAqui) {
+      if (!(await desativarDepoisDoTeste(rodada, criado.id))) falhou = true;
+      ativadoAqui = false;
+    }
+
+    // 7. prints
     if (op.semPrints) {
       rodada.passo({ etapa: 'Prints de tela', situacao: 'pulado', detalhe: 'Pedido `--sem-prints`.' });
     } else if (!prints.temSessao(raiz)) {
@@ -341,13 +358,10 @@ async function comandoCiclo(op) {
     rodada.passo({ etapa: 'Ciclo', situacao: 'falhou', detalhe: e.message });
     falhou = true;
   } finally {
+    // Rede de proteção: se algo estourou entre ativar e desativar, desativa aqui.
     if (ativadoAqui) {
-      const r = await n8n.desativar(criado.id).then(() => 'ok').catch((e) => e.message);
-      rodada.passo({ etapa: 'Desativar depois do teste', situacao: r === 'ok' ? 'ok' : 'falhou',
-        detalhe: r === 'ok'
-          ? 'Workflow de volta a inativo. Publicar é passo separado, e exige o seu OK.'
-          : `Não consegui desativar: ${r}. Confira na instância.` });
-      if (r !== 'ok') falhou = true;
+      if (!(await desativarDepoisDoTeste(rodada, criado.id))) falhou = true;
+      ativadoAqui = false;
     }
   }
 

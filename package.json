@@ -1,6 +1,6 @@
 {
   "name": "flow-n8n-harness",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Kit de esteira para workflows n8n: criar, testar, evidenciar e publicar com OK humano",
   "scripts": {

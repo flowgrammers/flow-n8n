@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Kit de n8n para Claude Code: ligação por OAuth e esteira de workflow com evidência",
-    "version": "0.2.0"
+    "version": "0.2.1"
   },
   "plugins": [
     {
       "name": "flow-n8n",
       "description": "Esteira de workflow n8n: criar, testar, evidenciar e publicar com OK da pessoa.",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "Flowgrammers"
       },

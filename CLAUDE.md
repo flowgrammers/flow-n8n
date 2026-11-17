@@ -57,10 +57,15 @@ npm run ciclo -- --spec exemplos/eco.json
   sufixo por rodada e um `webhookId` novo; a spec em disco não muda.
 - **Workflow criado pela API nasce com `availableInMCP: false`**, invisível ao `test_workflow`.
   A esteira liga o flag, a menos que a spec diga o contrário.
+- **Print com o workflow ativo mente.** O canvas sai como "Published", estado que o workflow não
+  tem ao fim do ciclo. A esteira desativa ANTES dos prints; o `finally` só desativa se algo estourou.
 - **O POST de criação recusa campos de leitura** (`id`, `active`, `tags`, `createdAt`). O
   cliente filtra para os cinco que a API aceita.
 
 ## Convenções
+
+- Nó de workflow em **camelCase**, frase curta de ação em português (`receberPayload`). A esteira
+  confere em `padroes.js`.
 
 - Código e identificador em ASCII; prosa, comentário e commit em pt-BR **com acento**.
 - Commits em conventional commits.

@@ -54,7 +54,7 @@ function rodar(args, ambiente) {
   // 16/11 com 409. O ciclo tem de passar mesmo assim.
   falsa.workflows.set('wf-antigo', {
     id: 'wf-antigo', active: true, name: 'rodada antiga',
-    nodes: [{ name: 'Receber Payload', type: 'n8n-nodes-base.webhook', parameters: { path: 'flow-n8n-harness-eco' } }],
+    nodes: [{ name: 'receberPayload', type: 'n8n-nodes-base.webhook', parameters: { path: 'flow-n8n-harness-eco' } }],
   });
 
   const r = await rodar(
@@ -99,6 +99,9 @@ function rodar(args, ambiente) {
     assert.ok(indice.includes('Ativação **temporária**'), 'o índice não declara que a ativação foi temporária');
     assert.ok(indice.includes('Desativar depois do teste'), 'faltou o passo de desativar');
     assert.ok(/\| 1 \| Sondar a instância \|/.test(indice), 'faltou o passo da sonda');
+    // Print com o workflow ainda ativo sai "Published" — evidência de um estado que não é o final.
+    assert.ok(indice.indexOf('| Desativar depois do teste |') < indice.indexOf('| Prints de tela |'),
+      'os prints vieram antes de desativar');
   });
 
   await teste('a resposta do webhook guardada é a do workflow', () => {
@@ -111,7 +114,7 @@ function rodar(args, ambiente) {
   await teste('a execução guardada traz o dado de cada nó', () => {
     const dados = achar(/execucao-no-n8n\.json$/);
     assert.strictEqual(dados.status, 'success');
-    assert.ok(dados.data?.['Responder com Eco'], `faltou o nó: ${Object.keys(dados.data || {})}`);
+    assert.ok(dados.data?.['responderComEco'], `faltou o nó: ${Object.keys(dados.data || {})}`);
   });
 
   await teste('o workflow fica INATIVO no fim do ciclo', () => {

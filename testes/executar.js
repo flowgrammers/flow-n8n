@@ -187,15 +187,24 @@ teste('workflow cru do editor cai em descrição, DOC, nome e nós genéricos', 
   ] };
   const fora = conferir(cru).filter((r) => !r.ok).map((r) => r.regra);
   for (const r of ['Nome do workflow descritivo', 'Descrição preenchida', 'Sticky `📋 DOC` no canvas',
-    'Nós com nome de ação, não de tipo', 'Webhook que responde tem caminho de erro']) {
+    'Nós com nome de ação, não de tipo', 'Nós em camelCase', 'Webhook que responde tem caminho de erro']) {
     assert.ok(fora.includes(r), `não acusou: ${r} — acusou: ${fora.join(' | ')}`);
+  }
+});
+
+teste('camelCase aceita acento e recusa espaço, Title Case e PascalCase', () => {
+  const nomes = (lista) => conferir({ nodes: lista.map((name) => ({ name, type: 'n8n-nodes-base.set' })) })
+    .find((r) => r.regra === 'Nós em camelCase');
+  assert.ok(nomes(['atualizarUsuárioNoJumpCloud', 'buscarCliente2']).ok);
+  for (const ruim of ['Receber Payload', 'ResponderComEco', 'responder com eco', 'jiraReal?', 'abrir_chamado']) {
+    assert.ok(!nomes([ruim]).ok, `aceitou ${ruim}`);
   }
 });
 
 teste('saída de erro ligada satisfaz a regra do webhook que responde', () => {
   const wf = { nodes: [
-    { name: 'Receber Pedido', type: 'n8n-nodes-base.webhook', parameters: { responseMode: 'responseNode' } },
-    { name: 'Buscar Cliente', type: 'n8n-nodes-base.httpRequest', onError: 'continueErrorOutput' },
+    { name: 'receberPedido', type: 'n8n-nodes-base.webhook', parameters: { responseMode: 'responseNode' } },
+    { name: 'buscarCliente', type: 'n8n-nodes-base.httpRequest', onError: 'continueErrorOutput' },
   ] };
   assert.ok(conferir(wf).find((r) => r.regra.startsWith('Webhook')).ok);
 });
